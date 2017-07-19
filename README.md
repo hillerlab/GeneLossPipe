@@ -17,7 +17,8 @@ mafQualityMasking.pl -input Input_maf_file -output Output_maf_file
 Genome assembly gaps indicate regions where parts of the real genome are missing in the given assembly. Missing sequence can comprise exons or even entire genes, which mimics exon or gene deletions. To avoid falsely calling such regions as deletions, mafFilterElines.pl uses the assembly gap annotation to remove all deletions or regions of unaligning sequence from the alignment that overlap assembly gaps.
 
 ```
-mafFilterElines.pl -input Input_maf_file -output Output_maf_file -reference ReferenceSpecies -alignment alignment
+mafFilterElines.pl -input Input_maf_file -output Output_maf_file -reference ReferenceSpecies 
+ -alignment alignment
 ```
 
 ### 3. Filtering genome alignments for paralogs and processed pseudogenes
@@ -26,7 +27,8 @@ This cleaning is achieved by a two step process:
 First, we convert the coordinates of these chains to bed format:
 
 ```
-filterMafsForWhiteListedChainsPPS.pl ReferenceSpecies QuerySpecies geneChainFilteringDir outputDirectoryWhite outputDirectoryBlack
+filterMafsForWhiteListedChainsPPS.pl ReferenceSpecies QuerySpecies geneChainFilteringDir 
+ outputDirectoryWhite outputDirectoryBlack
 ```
 
 where geneChainFilteringDir is a directory containing chain blocks that have been classified as whiteListed or blackListed, outputDirectoryWhite is a directory containing bed files of whiteListed chains and outputDirectoryBlack is a directory containing bed files of blackListed chains.
@@ -34,7 +36,8 @@ where geneChainFilteringDir is a directory containing chain blocks that have bee
 Subsequently, we overlap the coordinates of these chains with the coordinates of aligning sequence in the maf blocks and filter out sequences that come from paralogs/processed pseudogenes
 
 ```
-filterMafsForWhiteListedChains.pl -in Input_maf_file -out Output_maf_file -ref ReferenceSpecies -whiteListedChainsDir WhiteListedChainsDirectory -blackListedChainsDir BlackListedChainsDirectory 
+filterMafsForWhiteListedChains.pl -in Input_maf_file -out Output_maf_file -ref ReferenceSpecies 
+ -whiteListedChainsDir WhiteListedChainsDirectory -blackListedChainsDir BlackListedChainsDirectory 
 ```
 
 where WhiteListedChainsDirectory BlackListedChainsDirectory is produced by filterMafsForWhiteListedChainsPPS.pl above.
@@ -62,7 +65,8 @@ MergeBDB.perl realignedExons/realigned. allExons_CESAR.BDB
 The tabular format is a data structure that is used by geneLossPipeline to output mutations in the pairwise alignments (for reference-query species pair for every gene). createTabFiles.pl does this
 
 ```
-createTabFiles.pl -input geneList -ref RefSpecies -out OutputDirectory -log logFile -index allExons_CESAR.BDB  
+createTabFiles.pl -input geneList -ref RefSpecies -out OutputDirectory -log logFile 
+ -index allExons_CESAR.BDB  
 ```
 
 where geneList is a file listing the genes in modified genePred format.
@@ -70,10 +74,13 @@ where geneList is a file listing the genes in modified genePred format.
 Parameters:
 ```
 -v|verbose
--species [Optional: instead of all species in the genome alignment, restrict to one or few species: a comma separated string] 
--pMammals [run only for placental mammals in the input alignment. This information is contained in GeneLoss.config]
+-species [Optional: instead of all species in the genome alignment, restrict to one 
+ or few species: a comma separated string] 
+-pMammals [run only for placental mammals in the input alignment. This information 
+ is contained in GeneLoss.config]
 -alignment [Optional but mandatory if you specify pMammals] 
--sameSS [Only process genes where the entire gene in the query is on one scaffold/chromosome and a single strand] 
+-sameSS [Only process genes where the entire gene in the query is on one 
+ scaffold/chromosome and a single strand] 
 -excludeGenes [Optional: a list of genes that should be excluded, one gene per line]  
 ```
 
@@ -82,17 +89,24 @@ Parameters:
 This step involves detection of mutations in pairwise alignments (for reference-query species pair for every gene)
 
 ```
-geneLossPipeline.pl -input gene/geneListFile -out Output_Directory -alignment Alignment -ref ReferenceSpecies -tabDir DirectoryWithTabularFiles
+geneLossPipeline.pl -input gene/geneListFile -out Output_Directory -alignment Alignment 
+ -ref ReferenceSpecies -tabDir DirectoryWithTabularFiles
 ```
 
 Parameters:
 ```
--fmt [Optional, if set to 'lst', an input file needs to be specified where each line is one gene/transcript] 
--species [Optional: a comma separated file listing the species (the default behaviour is to look for every species for which there is a tabular file)]
--pMammals [run only for placental mammals in the input alignment. This information is contained in GeneLoss.config]
--EDE [Exclude Dubious Events - basically frameshifts that are flanked by a base of low quality or frameshifting insertions where inserts have a base of low quality , default is report all events]
+-fmt [Optional, if set to 'lst', an input file needs to be specified where each line 
+ is one gene/transcript] 
+-species [Optional: a comma separated file listing the species (the default behaviour is 
+ to look for every species for which there is a tabular file)]
+-pMammals [run only for placental mammals in the input alignment. This information 
+ is contained in GeneLoss.config]
+-EDE [Exclude Dubious Events - basically frameshifts that are flanked by a base of 
+ low quality or frameshifting insertions where inserts have a base of low quality, 
+ default is report all events]
 -excludeFPI [exclude FramePreserving events]
--all [Run 3 modules - Indel, InframeStopCodon and SpliceSite, otherwise you could specify -indel for frameshift, -ifsc for inflame stop codons and -ssm for splice site mutations]
+-all [Run 3 modules - Indel, InframeStopCodon and SpliceSite, otherwise you could specify 
+  -indel for frameshift, -ifsc for inflame stop codons and -ssm for splice site mutations]
 ```
 
 Afterwards merge the mutation profile for every gene to produce one file:
@@ -102,7 +116,8 @@ MergeBDB.perl Output_Directory/geneLossPipe. geneLossPipeAllGenes.BDB
 
 ### 7. Calling gene losses from the mutation profile for every gene:
 ```
-geneLossCaller.pl genesList GeneLossPipeBDB annotationFile species ReadingFrameThreshold exonGroupsDir u12IntronList outFile
+geneLossCaller.pl genesList GeneLossPipeBDB annotationFile species 
+  ReadingFrameThreshold exonGroupsDir u12IntronList outFile
 ``` 
 
 where genesList is a file listing one gene per line (the first field is the gene name, the second is a string of principal isoforms which are separated by comma), GeneLossPipeBDB is produced in Step 6, annotationFile is a the file with the modified genePred format, ReadingFrameThreshold is the fraction of the remaining intact reading frame (0.6 was used for our study), exonGroupsDir is produced by cesarRealign.pl, and u12IntronList is a file listing coordinates of U12 introns in bed format.
