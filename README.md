@@ -22,10 +22,13 @@ This cleaning is achieved by a two step process:
 First, we convert the coordinates of these chains to bed format:
 
 ``` filterMafsForWhiteListedChainsPPS.pl ReferenceSpecies QuerySpecies geneChainFilteringDir outputDirectoryWhite outputDirectoryBlack```
+
 where geneChainFilteringDir is a directory containing chain blocks that have been classified as whiteListed or blackListed, outputDirectoryWhite is a directory containing bed files of whiteListed chains and outputDirectoryBlack is a directory containing bed files of blackListed chains.
 
 Subsequently, we overlap the coordinates of these chains with the coordinates of aligning sequence in the maf blocks and filter out sequences that come from paralogs/processed pseudogenes
+
 ``` ./filterMafsForWhiteListedChains.pl -in Input_maf_file -out Output_maf_file -ref ReferenceSpecies -whiteListedChainsDir WhiteListedChainsDirectory -blackListedChainsDir BlackListedChainsDirectory ```
+
 where WhiteListedChainsDirectory BlackListedChainsDirectory is produced by filterMafsForWhiteListedChainsPPS.pl above.
 
 ### 4. Realignment with CESAR
@@ -34,33 +37,33 @@ Ambiguous alignments, where several suboptimal solutions exist, can result in sp
 This step involves determining intron length for every exon in the genome alignment to identify cases of intron deletion. Subsequently, exons where the intervening introns are deleted are aligned together as a single unit. All other exons are aligned individually.
 
 ``` cesarRealign.pl speciesList allTranscriptsList ReferenceSpecies bigBedIndex clade [human|mouse] jobsPrefix```
+
 where speciesList is a file listing query species (one species per line), allTranscriptsList is a file listing all the genes/transcripts in modified genePred format (full path needs to be specified for this file), bigBedIndex is the indexed alignment (.bb) file, and jobsPrefix specifies a prefix of the generated job files.
 
-cesarRealign.pl will produce three jobs file:
-$jobsPrefix_short
-$jobsPrefix_medium
-$jobsPrefix_long
-
-Each job in the $jobsPrefix_short typically finish within an hour, $jobsPrefix_medium need something between 4 to 8 hours, and $jobsPrefix_long run longer. 
+cesarRealign.pl will produce three jobs file: $jobsPrefix_short, $jobsPrefix_medium, $jobsPrefix_long. Each job in the $jobsPrefix_short typically finish within an hour, $jobsPrefix_medium need something between 4 to 8 hours, and $jobsPrefix_long run longer. 
 
 These jobs need to be executed on a compute cluster. Afterwards, merging the alignment files produced by CESAR to produce one file that contains alignments for all exons:
+
 ``` MergeBDB.perl realignedExons/realigned. allExons_CESAR.BDB ```
 
 ### 5. Creating tabular files:
 The tabular format is a data structure that is used by geneLossPipeline to output mutations in the pairwise alignments (for reference-query species pair for every gene). createTabFiles.pl does this
 
 ``` createTabFiles.pl [-v|verbose] -input geneList -ref RefSpecies -out OutputDirectory -log logFile -index allExons_CESAR.BDB  ```
+
 where geneList is a file listing the genes in modified genePred format.
 
 Parameters:
 ```
 -species [Optional: instead of all species in the genome alignment, restrict to one or few species: a comma separated string] 
 -pMammals [run only for placental mammals in the input alignment. This information is contained in GeneLoss.config] -alignment [Optional but mandatory if you specify pMammals] 
--sameSS [Only process genes where the entire gene in the query is on one scaffold/chromosome and a single strand] -excludeGenes [Optional: a list of genes that should be excluded, one gene per line]  ```
+-sameSS [Only process genes where the entire gene in the query is on one scaffold/chromosome and a single strand] -excludeGenes [Optional: a list of genes that should be excluded, one gene per line]  
+```
 
 
 ### 6. Detecting mutations in pairwise alignments: 
 This step involves detection of mutations in pairwise alignments (for reference-query species pair for every gene)
+
 ``` geneLossPipeline.pl -input gene/geneListFile -out Output_Directory -alignment Alignment -ref ReferenceSpecies -tabDir DirectoryWithTabularFiles ```
 
 Parameters:
@@ -73,7 +76,8 @@ Parameters:
 -all [Run 3 modules - Indel, InframeStopCodon and SpliceSite, otherwise you could specify -indel for frameshift, -ifsc for inflame stop codons and -ssm for splice site mutations] ```
 
 Afterwards merge the mutation profile for every gene to produce one file:
-``` MergeBDB.perl Output_Directory/geneLossPipe. geneLossPipeAllGenes.BDB```
+```
+MergeBDB.perl Output_Directory/geneLossPipe. geneLossPipeAllGenes.BDB```
 
 ### 7. Calling gene losses from the mutation profile for every gene:
 ``` geneLossCaller.pl genesList GeneLossPipeBDB annotationFile species ReadingFrameThreshold exonGroupsDir u12IntronList outFile``` 
