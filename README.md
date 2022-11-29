@@ -1,3 +1,5 @@
+We recommend running [TOGA](https://github.com/hillerlab/TOGA) which incorporates an improved version of the gene loss detection pipeline and offers many additional features, including gene annotation and orthology inference.
+
 # Computational pipeline to detect gene loss events
 
 In order to achieve high specificity, this pipeline implements a number of steps that overcome assembly and alignment issues, and address evolutionary exon-intron structure changes in genes that are conserved.
